@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/common :: head('Products')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('products')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Product Management')}"></nav>
+        <div class="content">
+
+            <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+                <form class="d-flex" th:action="@{/products}" method="get" style="max-width:420px;">
+                    <input class="form-control me-2" type="search" name="q" th:value="${q}"
+                           placeholder="Search by name, SKU or category…">
+                    <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/products/new}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Product
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>SKU</th><th>Name</th><th>Category</th>
+                                <th class="text-end">Price</th><th class="text-center">Stock</th>
+                                <th class="text-center">Reorder</th><th>Expiry</th><th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(products)}"><td colspan="8" class="text-center text-muted py-4">No products found.</td></tr>
+                            <tr th:each="p : ${products}">
+                                <td><code th:text="${p.sku}">SKU</code></td>
+                                <td th:text="${p.name}">Name</td>
+                                <td th:text="${p.category != null ? p.category.name : '—'}">Cat</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT')}">0</td>
+                                <td class="text-center">
+                                    <span class="badge" th:classappend="${p.lowStock} ? 'bg-danger' : 'bg-success'"
+                                          th:text="${p.quantity}">0</span>
+                                </td>
+                                <td class="text-center" th:text="${p.reorderLevel}">0</td>
+                                <td th:text="${p.expiryDate != null ? #temporals.format(p.expiryDate,'dd MMM yyyy') : '—'}">—</td>
+                                <td class="text-end text-nowrap">
+                                    <a sec:authorize="hasRole('ADMIN')" th:href="@{'/products/edit/' + ${p.id}}"
+                                       class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                                    <form sec:authorize="hasRole('ADMIN')" class="d-inline"
+                                          th:action="@{'/products/delete/' + ${p.id}}" method="post"
+                                          onsubmit="return confirm('Delete this product?');">
+                                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                    <span sec:authorize="!hasRole('ADMIN')" class="text-muted small">view only</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

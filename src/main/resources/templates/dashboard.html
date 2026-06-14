@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/common :: head('Dashboard')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('dashboard')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Dashboard')}"></nav>
+        <div class="content">
+
+            <!-- Stat cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-3">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-tags"></i></div>
+                            <div>
+                                <div class="text-muted small">Total Products</div>
+                                <div class="stat-value" th:text="${stats.totalProducts}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                            <div>
+                                <div class="text-muted small">Low Stock Items</div>
+                                <div class="stat-value" th:text="${stats.lowStockCount}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-cash-stack"></i></div>
+                            <div>
+                                <div class="text-muted small">Today's Revenue</div>
+                                <div class="stat-value" th:text="${#numbers.formatDecimal(stats.todaysRevenue,0,'COMMA',2,'POINT')}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-bell"></i></div>
+                            <div>
+                                <div class="text-muted small">Active AI Alerts</div>
+                                <div class="stat-value" th:text="${stats.activeAlerts}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Sales trend chart -->
+                <div class="col-lg-8">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-graph-up"></i> Sales Trend &amp; AI Forecast</span>
+                            <a th:href="@{/ai/analytics}" class="small">View analytics →</a>
+                        </div>
+                        <div class="card-body" style="height:320px;">
+                            <canvas id="dashTrend"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI alerts -->
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-robot"></i> Intelligent Alerts</div>
+                        <div class="card-body">
+                            <p th:if="${#lists.isEmpty(alerts)}" class="text-muted small mb-0">No alerts — everything looks healthy.</p>
+                            <div th:each="a : ${alerts}" class="alert py-2 px-3 mb-2"
+                                 th:classappend="'alert-' + ${a.severity}">
+                                <div class="fw-semibold small" th:text="${a.title}">Title</div>
+                                <div class="small" th:text="${a.message}">message</div>
+                            </div>
+                            <a th:href="@{/ai/insights}" class="small">See all AI insights →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <!-- Restock predictions -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-lightning-charge"></i> Smart Restock Suggestions</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr><th>Product</th><th>Stock</th><th>Days Left</th><th>Restock</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(topRestock)}"><td colspan="4" class="text-muted small">No urgent restocks.</td></tr>
+                                    <tr th:each="r : ${topRestock}">
+                                        <td th:text="${r.productName}">Product</td>
+                                        <td th:text="${r.currentStock}">0</td>
+                                        <td><span class="badge bg-danger" th:text="${r.daysToStockout} ?: '—'">0</span></td>
+                                        <td th:text="${r.recommendedRestockQty}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent sales -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-receipt"></i> Recent Sales</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr><th>Invoice</th><th>Date</th><th class="text-end">Amount</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(recentSales)}"><td colspan="3" class="text-muted small">No sales yet.</td></tr>
+                                    <tr th:each="s : ${recentSales}">
+                                        <td><a th:href="@{'/sales/invoice/' + ${s.id}}" th:text="${s.invoiceNo}">INV</a></td>
+                                        <td th:text="${#temporals.format(s.saleDate, 'dd MMM HH:mm')}">date</td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(s.totalAmount,0,'COMMA',2,'POINT')}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+    SI.fetchJson('/api/charts/sales-trend?days=30&forecast=7')
+        .then(d => SI.salesTrendChart('dashTrend', d))
+        .catch(console.error);
+</script>
+</body>
+</html>

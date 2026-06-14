@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Invoice')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('sales')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Invoice')}"></nav>
+        <div class="content">
+            <div class="card mx-auto" style="max-width:720px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between border-bottom pb-3 mb-3">
+                        <div>
+                            <h4 class="mb-0 text-primary"><i class="bi bi-box-seam-fill"></i> Smart Inventory</h4>
+                            <small class="text-muted">Supermarket / Retail POS</small>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold" th:text="${sale.invoiceNo}">INV</div>
+                            <small th:text="${#temporals.format(sale.saleDate,'dd MMM yyyy HH:mm')}">date</small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3 small">
+                        <div class="col-6">Cashier: <strong th:text="${sale.cashier}">staff</strong></div>
+                        <div class="col-6 text-end">Payment: <strong th:text="${sale.paymentMethod}">CASH</strong></div>
+                    </div>
+
+                    <table class="table">
+                        <thead class="table-light">
+                            <tr><th>Item</th><th class="text-center">Qty</th><th class="text-end">Unit</th><th class="text-end">Total</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="i : ${sale.items}">
+                                <td th:text="${i.product.name}">Item</td>
+                                <td class="text-center" th:text="${i.quantity}">1</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(i.unitPrice,0,'COMMA',2,'POINT')}">0</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(i.lineTotal,0,'COMMA',2,'POINT')}">0</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><th colspan="3" class="text-end">Grand Total</th>
+                                <th class="text-end" th:text="${#numbers.formatDecimal(sale.totalAmount,0,'COMMA',2,'POINT')}">0</th></tr>
+                        </tfoot>
+                    </table>
+
+                    <p class="text-center text-muted small mt-3">Thank you for shopping with us!</p>
+
+                    <div class="text-center no-print mt-3">
+                        <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer"></i> Print</button>
+                        <a th:href="@{/sales}" class="btn btn-light">New Sale</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

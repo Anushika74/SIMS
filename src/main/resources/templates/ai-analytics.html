@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Prediction & Analytics')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('ai-analytics')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Prediction & Analytics')}"></nav>
+        <div class="content">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <form class="d-flex gap-2 align-items-end" th:action="@{/ai/analytics}" method="get">
+                    <div>
+                        <label class="form-label small mb-0">History (days)</label>
+                        <input type="number" name="days" min="7" max="180" th:value="${days}" class="form-control form-control-sm" style="width:110px">
+                    </div>
+                    <div>
+                        <label class="form-label small mb-0">Forecast (days)</label>
+                        <input type="number" name="forecast" min="1" max="30" th:value="${forecast}" class="form-control form-control-sm" style="width:110px">
+                    </div>
+                    <button class="btn btn-sm btn-primary">Update</button>
+                </form>
+                <span class="ai-pill" th:classappend="${mlAvailable} ? '' : 'offline'">
+                    <i class="bi bi-cpu"></i>
+                    <span th:text="${trend.source}">engine</span>
+                </span>
+            </div>
+
+            <!-- Feature 3: Sales Trend + forecast -->
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-graph-up-arrow"></i> Sales Trend Analysis &amp; Forecast</div>
+                <div class="card-body">
+                    <div style="height:330px;"><canvas id="trendChart"></canvas></div>
+                    <div class="row text-center mt-3">
+                        <div class="col"><div class="text-muted small">Weekday Avg</div>
+                            <div class="fw-bold" th:text="${#numbers.formatDecimal(trend.weekdayAverage,0,'COMMA',2,'POINT')}">0</div></div>
+                        <div class="col"><div class="text-muted small">Weekend Avg</div>
+                            <div class="fw-bold" th:text="${#numbers.formatDecimal(trend.weekendAverage,0,'COMMA',2,'POINT')}">0</div></div>
+                        <div class="col"><div class="text-muted small">Daily Growth</div>
+                            <div class="fw-bold" th:classappend="${trend.growthRatePct >= 0} ? 'text-success' : 'text-danger'"
+                                 th:text="${#numbers.formatDecimal(trend.growthRatePct,0,'POINT',1,'POINT')} + '%'">0%</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-lg-7">
+                    <!-- AI Prediction chart -->
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-bullseye"></i> AI Prediction — Days to Stockout</div>
+                        <div class="card-body" style="height:320px;"><canvas id="restockChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-lightbulb"></i> AI Insights</div>
+                        <div class="card-body">
+                            <div class="insight-item" th:each="ins : ${trend.insights}">
+                                <i class="bi bi-check2-circle text-primary"></i> <span th:text="${ins}">insight</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restock prediction table -->
+            <div class="card">
+                <div class="card-header"><i class="bi bi-table"></i> Smart Restock Prediction (all products)</div>
+                <div class="card-body p-0" style="max-height:460px; overflow:auto;">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr><th>Product</th><th class="text-center">Stock</th><th class="text-center">Avg/day</th>
+                                <th class="text-center">Days Left</th><th class="text-center">Restock</th>
+                                <th class="text-center">Urgency</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${restock}">
+                                <td th:text="${r.productName}">Name</td>
+                                <td class="text-center" th:text="${r.currentStock}">0</td>
+                                <td class="text-center" th:text="${r.avgDailySales}">0</td>
+                                <td class="text-center" th:text="${r.daysToStockout != null ? r.daysToStockout : '—'}">—</td>
+                                <td class="text-center" th:text="${r.recommendedRestockQty}">0</td>
+                                <td class="text-center">
+                                    <span class="badge"
+                                          th:classappend="${r.urgency == 'HIGH'} ? 'bg-danger' : (${r.urgency == 'MEDIUM'} ? 'bg-warning text-dark' : (${r.urgency == 'LOW'} ? 'bg-info text-dark' : 'bg-success'))"
+                                          th:text="${r.urgency}">OK</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script th:inline="javascript">
+    const days = [[${days}]];
+    const forecast = [[${forecast}]];
+    SI.fetchJson('/api/charts/sales-trend?days=' + days + '&forecast=' + forecast)
+        .then(d => SI.salesTrendChart('trendChart', d)).catch(console.error);
+    SI.fetchJson('/api/charts/restock?top=12')
+        .then(d => SI.barChart('restockChart', d, 'Days to stockout', '#dc2626')).catch(console.error);
+</script>
+</body>
+</html>

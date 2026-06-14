@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Product Form')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('products')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Product Details')}"></nav>
+        <div class="content">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-box"></i>
+                    <span th:text="${product.id != null} ? 'Edit Product' : 'Add New Product'">Product</span>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/products/save}" method="post" th:object="${product}">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">SKU / Barcode</label>
+                                <input class="form-control" th:field="*{sku}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Product Name</label>
+                                <input class="form-control" th:field="*{name}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" name="categoryId">
+                                    <option value="">— Select —</option>
+                                    <option th:each="c : ${categories}" th:value="${c.id}"
+                                            th:text="${c.name}"
+                                            th:selected="${product.category != null and product.category.id == c.id}">Cat</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Supplier</label>
+                                <input class="form-control" th:field="*{supplier}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Selling Price</label>
+                                <input type="number" step="0.01" min="0" class="form-control" th:field="*{unitPrice}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cost Price</label>
+                                <input type="number" step="0.01" min="0" class="form-control" th:field="*{costPrice}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Stock Quantity</label>
+                                <input type="number" min="0" class="form-control" th:field="*{quantity}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Reorder Level</label>
+                                <input type="number" min="0" class="form-control" th:field="*{reorderLevel}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Expiry Date <span class="text-muted">(optional)</span></label>
+                                <input type="date" class="form-control" th:field="*{expiryDate}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="2" th:field="*{description}"></textarea>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
+                            <a th:href="@{/products}" class="btn btn-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('AI Insights')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('ai-insights')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('AI Insights Dashboard')}"></nav>
+        <div class="content">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <p class="text-muted mb-0">Automated business intelligence from your sales &amp; stock data.</p>
+                <span class="ai-pill" th:classappend="${mlAvailable} ? '' : 'offline'">
+                    <i class="bi bi-cpu"></i>
+                    <span th:text="${mlAvailable} ? 'ML model online' : 'Rule-based engine'">engine</span>
+                </span>
+            </div>
+
+            <!-- Feature 4: Intelligent Alerts -->
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-bell-fill text-warning"></i> Intelligent Alerts
+                    <span class="badge bg-secondary" th:text="${#lists.size(alerts)}">0</span></div>
+                <div class="card-body">
+                    <p th:if="${#lists.isEmpty(alerts)}" class="text-muted mb-0">No active alerts.</p>
+                    <div class="row g-2">
+                        <div class="col-md-6" th:each="a : ${alerts}">
+                            <div class="alert mb-0 py-2 px-3" th:classappend="'alert-' + ${a.severity}">
+                                <span class="badge bg-dark me-1" th:text="${a.type}">TYPE</span>
+                                <span class="fw-semibold" th:text="${a.title}">Title</span>
+                                <div class="small" th:text="${a.message}">message</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Feature 2: Movement breakdown -->
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-pie-chart"></i> Product Movement</div>
+                        <div class="card-body">
+                            <div style="height:230px;"><canvas id="movementChart"></canvas></div>
+                            <div class="d-flex justify-content-around mt-3 text-center">
+                                <div><span class="badge badge-fast">FAST</span><div class="fw-bold" th:text="${movementSummary.get('FAST')}">0</div></div>
+                                <div><span class="badge badge-slow">SLOW</span><div class="fw-bold" th:text="${movementSummary.get('SLOW')}">0</div></div>
+                                <div><span class="badge badge-dead">DEAD</span><div class="fw-bold" th:text="${movementSummary.get('DEAD')}">0</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fast movers -->
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header text-success"><i class="bi bi-fire"></i> Fast-Moving Products</div>
+                        <div class="card-body p-0" style="max-height:330px; overflow:auto;">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light"><tr><th>Product</th><th class="text-end">Units</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(fastMovers)}"><td colspan="2" class="text-muted small">—</td></tr>
+                                    <tr th:each="m : ${fastMovers}">
+                                        <td th:text="${m.productName}">Name</td>
+                                        <td class="text-end" th:text="${m.totalSold}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dead stock -->
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header text-danger"><i class="bi bi-trash3"></i> Dead Stock</div>
+                        <div class="card-body p-0" style="max-height:330px; overflow:auto;">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light"><tr><th>Product</th><th class="text-end">Days idle</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(deadStock)}"><td colspan="2" class="text-muted small">None — great!</td></tr>
+                                    <tr th:each="m : ${deadStock}">
+                                        <td th:text="${m.productName}">Name</td>
+                                        <td class="text-end" th:text="${m.daysSinceLastSale != null ? m.daysSinceLastSale : 'never'}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 1: Restock suggestions -->
+            <div class="card mt-3">
+                <div class="card-header"><i class="bi bi-lightning-charge-fill text-primary"></i> Smart Restock Suggestions</div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Product</th><th class="text-center">Stock</th><th class="text-center">Avg/day</th>
+                                <th class="text-center">Days Left</th><th class="text-center">Restock Qty</th><th>Suggestion</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(restock)}"><td colspan="6" class="text-muted small p-3">No urgent restocks.</td></tr>
+                            <tr th:each="r : ${restock}">
+                                <td th:text="${r.productName}">Name</td>
+                                <td class="text-center" th:text="${r.currentStock}">0</td>
+                                <td class="text-center" th:text="${r.avgDailySales}">0</td>
+                                <td class="text-center">
+                                    <span class="badge"
+                                          th:classappend="${r.urgency == 'HIGH'} ? 'bg-danger' : (${r.urgency == 'MEDIUM'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                                          th:text="${r.daysToStockout != null ? r.daysToStockout : '—'}">0</span>
+                                </td>
+                                <td class="text-center fw-bold" th:text="${r.recommendedRestockQty}">0</td>
+                                <td class="small" th:text="${r.message}">msg</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+    SI.fetchJson('/api/charts/movement')
+        .then(d => SI.doughnut('movementChart', d, ['#16a34a', '#f59e0b', '#dc2626']))
+        .catch(console.error);
+</script>
+</body>
+</html>

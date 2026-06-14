@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Sales')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('sales')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Sales Management')}"></nav>
+        <div class="content">
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}">error</div>
+
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <span><i class="bi bi-cart-plus"></i> New Sale</span>
+                            <a th:href="@{/sales/history}" class="small">Sales history →</a>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/sales/record}" method="post" id="saleForm">
+                                <table class="table align-middle" id="itemsTable">
+                                    <thead class="table-light">
+                                        <tr><th style="width:55%">Product</th><th>Qty</th><th class="text-end">Line Total</th><th></th></tr>
+                                    </thead>
+                                    <tbody id="itemsBody"><!-- rows injected by JS --></tbody>
+                                </table>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">
+                                    <i class="bi bi-plus"></i> Add Item
+                                </button>
+
+                                <div class="row mt-3 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small">Payment Method</label>
+                                        <select name="paymentMethod" class="form-select">
+                                            <option value="CASH">Cash</option>
+                                            <option value="CARD">Card</option>
+                                            <option value="MOBILE">Mobile / Wallet</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 ms-auto text-end">
+                                        <div class="text-muted small">Total</div>
+                                        <div class="fs-3 fw-bold text-primary" id="grandTotal">0.00</div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success mt-3 w-100">
+                                    <i class="bi bi-check2-circle"></i> Complete Sale &amp; Generate Invoice
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-receipt-cutoff"></i> Recent Sales</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light"><tr><th>Invoice</th><th class="text-end">Amount</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(recentSales)}"><td colspan="2" class="text-muted small">No sales yet.</td></tr>
+                                    <tr th:each="s : ${recentSales}">
+                                        <td><a th:href="@{'/sales/invoice/' + ${s.id}}" th:text="${s.invoiceNo}">INV</a></td>
+                                        <td class="text-end" th:text="${#numbers.formatDecimal(s.totalAmount,0,'COMMA',2,'POINT')}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Product options template -->
+<select id="productOptions" class="d-none">
+    <option value="">— Select product —</option>
+    <option th:each="p : ${products}" th:value="${p.id}"
+            th:attr="data-price=${p.unitPrice}, data-stock=${p.quantity}"
+            th:text="${p.name} + ' (' + ${#numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT')} + ')'">Product</option>
+</select>
+
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+    const optionsHtml = document.getElementById('productOptions').innerHTML;
+
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><select name="productId" class="form-select form-select-sm prod" onchange="recalc()">${optionsHtml}</select></td>
+            <td><input type="number" name="quantity" min="1" value="1" class="form-control form-control-sm qty" style="width:90px" oninput="recalc()"></td>
+            <td class="text-end line">0.00</td>
+            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('tr').remove(); recalc();"><i class="bi bi-x"></i></button></td>`;
+        document.getElementById('itemsBody').appendChild(tr);
+    }
+
+    function recalc() {
+        let total = 0;
+        document.querySelectorAll('#itemsBody tr').forEach(tr => {
+            const sel = tr.querySelector('.prod');
+            const qty = parseInt(tr.querySelector('.qty').value || '0', 10);
+            const price = parseFloat(sel.selectedOptions[0]?.dataset.price || '0');
+            const line = price * qty;
+            tr.querySelector('.line').textContent = SI.money(line);
+            total += line;
+        });
+        document.getElementById('grandTotal').textContent = SI.money(total);
+    }
+
+    // Start with one row
+    addRow();
+
+    document.getElementById('saleForm').addEventListener('submit', e => {
+        const rows = document.querySelectorAll('#itemsBody tr').length;
+        if (rows === 0) { e.preventDefault(); alert('Add at least one item.'); }
+    });
+</script>
+</body>
+</html>

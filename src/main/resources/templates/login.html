@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Login')}"></head>
+<body>
+<div class="login-wrapper">
+    <div class="card login-card shadow-lg">
+        <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+                <div class="display-6 text-primary"><i class="bi bi-box-seam-fill"></i></div>
+                <h4 class="fw-bold mt-2 mb-0">Smart Inventory</h4>
+                <p class="text-muted small">AI-Powered Management System</p>
+            </div>
+
+            <div th:if="${param.error}" class="alert alert-danger py-2">
+                Invalid username or password.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-success py-2">
+                You have been logged out.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                </button>
+            </form>
+
+            <div class="mt-4 small text-muted">
+                <div class="border-top pt-3">
+                    <strong>Demo accounts</strong>
+                    <div>Admin — <code>admin</code> / <code>admin123</code></div>
+                    <div>Staff — <code>staff</code> / <code>staff123</code></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>

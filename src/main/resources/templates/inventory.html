@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Inventory')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('inventory')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Inventory Management')}"></nav>
+        <div class="content">
+
+            <div class="row g-3 mb-3">
+                <!-- Receive stock -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-box-arrow-in-down"></i> Receive / Add Stock</div>
+                        <div class="card-body">
+                            <form th:action="@{/inventory/add}" method="post" class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small">Product</label>
+                                    <select name="productId" class="form-select" required>
+                                        <option th:each="p : ${products}" th:value="${p.id}"
+                                                th:text="${p.name} + ' (in stock: ' + ${p.quantity} + ')'">Product</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Quantity to add</label>
+                                    <input type="number" min="1" name="quantity" class="form-control" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Reason</label>
+                                    <input name="reason" class="form-control" placeholder="Purchase order #">
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i> Add Stock</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adjust stock -->
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-sliders"></i> Adjust / Correct Stock</div>
+                        <div class="card-body">
+                            <form th:action="@{/inventory/adjust}" method="post" class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small">Product</label>
+                                    <select name="productId" class="form-select" required>
+                                        <option th:each="p : ${products}" th:value="${p.id}"
+                                                th:text="${p.name} + ' (in stock: ' + ${p.quantity} + ')'">Product</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Set quantity to</label>
+                                    <input type="number" min="0" name="quantity" class="form-control" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Reason</label>
+                                    <input name="reason" class="form-control" placeholder="Stock count / damage">
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-outline-secondary w-100"><i class="bi bi-check2-square"></i> Adjust</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low stock alert -->
+            <div class="card mb-3" th:if="${not #lists.isEmpty(lowStock)}">
+                <div class="card-header text-danger"><i class="bi bi-exclamation-triangle"></i> Low Stock Alerts</div>
+                <div class="card-body">
+                    <span th:each="p : ${lowStock}" class="badge bg-danger-subtle text-danger me-2 mb-2 p-2">
+                        <span th:text="${p.name}">Name</span>: <strong th:text="${p.quantity}">0</strong> left
+                    </span>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Current stock -->
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-boxes"></i> Current Stock Levels</div>
+                        <div class="card-body p-0" style="max-height:430px; overflow:auto;">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-light sticky-top"><tr><th>Product</th><th class="text-center">Qty</th><th class="text-center">Reorder</th><th>Status</th></tr></thead>
+                                <tbody>
+                                    <tr th:each="p : ${products}">
+                                        <td th:text="${p.name}">Name</td>
+                                        <td class="text-center" th:text="${p.quantity}">0</td>
+                                        <td class="text-center" th:text="${p.reorderLevel}">0</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${p.lowStock} ? 'bg-danger' : 'bg-success'"
+                                                  th:text="${p.lowStock} ? 'LOW' : 'OK'">OK</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movement log -->
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-clock-history"></i> Recent Stock Movements</div>
+                        <div class="card-body p-0" style="max-height:430px; overflow:auto;">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light sticky-top"><tr><th>Product</th><th>Type</th><th class="text-center">Qty</th><th>When</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(movements)}"><td colspan="4" class="text-muted small">No movements yet.</td></tr>
+                                    <tr th:each="m : ${movements}">
+                                        <td th:text="${m.product.name}">Name</td>
+                                        <td><span class="badge bg-secondary" th:text="${m.type}">IN</span></td>
+                                        <td class="text-center" th:text="${m.quantity}">0</td>
+                                        <td class="small" th:text="${#temporals.format(m.timestamp,'dd MMM HH:mm')}">date</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+</body>
+</html>
