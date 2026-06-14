@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SIMS Project Report</title>
+<style>
+    :root { --ink:#1f2937; --accent:#4f46e5; --muted:#6b7280; }
+    * { box-sizing: border-box; }
+    body {
+        font-family: "Segoe UI", Calibri, Arial, sans-serif;
+        color: var(--ink); line-height: 1.6; margin: 0;
+        font-size: 12.5pt;
+    }
+    /* Each .page becomes its own printed page */
+    .page {
+        padding: 26mm 22mm;
+        max-width: 820px;
+        margin: 0 auto;
+        page-break-after: always;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    h1 { font-size: 26pt; color: var(--accent); margin: 0 0 6px; }
+    h2 {
+        font-size: 18pt; color: var(--accent);
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 6px; margin: 0 0 16px;
+    }
+    h3 { font-size: 13.5pt; color: #111827; margin: 18px 0 6px; }
+    p, li { font-size: 12.5pt; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 11pt; }
+    th, td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: left; vertical-align: top; }
+    th { background: #eef2ff; }
+    code { background: #f1f5f9; padding: 1px 5px; border-radius: 4px; font-size: 10.5pt; }
+    pre { background: #0f172a; color: #e2e8f0; padding: 12px 14px; border-radius: 8px;
+          font-size: 10pt; overflow-x: auto; }
+    .cover { text-align: center; display: flex; flex-direction: column;
+             justify-content: center; min-height: 230mm; }
+    .cover .badge { font-size: 60pt; color: var(--accent); }
+    .cover h1 { font-size: 30pt; margin-top: 10px; }
+    .cover .sub { font-size: 15pt; color: var(--muted); margin-top: 4px; }
+    .cover .meta { margin-top: 50px; font-size: 13pt; line-height: 2; }
+    .toc li { margin: 8px 0; font-size: 13pt; }
+    .note { background:#fffbeb; border-left:4px solid #f59e0b; padding:8px 12px; border-radius:6px; }
+    .shot { background:#f1f5f9; border:1px dashed #94a3b8; color:#64748b;
+            padding:14px; text-align:center; border-radius:8px; margin:10px 0; font-style:italic; }
+    @media print {
+        .page { padding: 22mm 18mm; }
+        a { color: var(--ink); text-decoration: none; }
+    }
+    @page { size: A4; margin: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============== COVER PAGE ============== -->
+<section class="page cover">
+    <div class="badge">&#128230;</div>
+    <h1>Smart Inventory Management System</h1>
+    <div class="sub">with AI-Based Business Insights</div>
+    <div class="meta">
+        <div><strong>Module:</strong> Java Web Application Development</div>
+        <div><strong>Student Name:</strong> ______________________</div>
+        <div><strong>Student ID:</strong> ______________________</div>
+        <div><strong>Date:</strong> ______________________</div>
+    </div>
+</section>
+
+<!-- ============== TABLE OF CONTENTS ============== -->
+<section class="page">
+    <h2>Table of Contents</h2>
+    <ol class="toc">
+        <li>Introduction</li>
+        <li>Problem Statement</li>
+        <li>Objectives</li>
+        <li>Literature Review</li>
+        <li>System Analysis</li>
+        <li>System Design</li>
+        <li>Database Design</li>
+        <li>AI Model Explanation</li>
+        <li>Implementation</li>
+        <li>Testing</li>
+        <li>Results &amp; Discussion</li>
+        <li>Conclusion</li>
+        <li>References</li>
+    </ol>
+</section>
+
+<!-- ============== 1. INTRODUCTION ============== -->
+<section class="page">
+    <h2>1. Introduction</h2>
+    <p>Inventory is the heart of any retail business. A supermarket or shop must keep the
+    right products, in the right quantity, at the right time. If stock runs out, the shop
+    loses sales and customers; if too much stock is held, money is tied up and perishable
+    goods expire. Traditionally these decisions are made manually, based on the shopkeeper's
+    memory and guesswork.</p>
+    <p>Modern businesses such as Amazon and Walmart instead use <strong>Artificial
+    Intelligence (AI)</strong> to analyse their sales and inventory data, predict shortages,
+    spot trends, and recommend actions automatically.</p>
+    <p>This project, the <strong>Smart Inventory Management System (SIMS)</strong>, is a
+    complete <strong>Java web application</strong> for a supermarket/retail shop that manages
+    products, stock and sales, and adds <strong>four AI/ML-powered features</strong> that turn
+    raw sales data into intelligent business suggestions &mdash; such as <em>"Fresh Milk may
+    run out in 4 days, restock 60 units"</em> or <em>"Sales increase on weekends."</em></p>
+</section>
+
+<!-- ============== 2. PROBLEM STATEMENT ============== -->
+<section class="page">
+    <h2>2. Problem Statement</h2>
+    <p>Manual inventory management suffers from several problems:</p>
+    <ul>
+        <li><strong>Reactive restocking</strong> &ndash; shopkeepers notice a product is out
+        of stock only <em>after</em> it sells out, causing lost sales.</li>
+        <li><strong>Overstocking</strong> &ndash; ordering too much ties up cash and leads to waste.</li>
+        <li><strong>Dead stock</strong> &ndash; slow or non-selling products occupy shelf space unnoticed.</li>
+        <li><strong>Expiry losses</strong> &ndash; perishable goods expire before anyone reacts.</li>
+        <li><strong>No forecasting</strong> &ndash; there is no easy way to predict future demand
+        or understand sales trends (e.g. weekend spikes).</li>
+    </ul>
+    <p>The system solves these problems by <strong>analysing historical sales data</strong> to
+    <strong>predict</strong> stock shortages, <strong>classify</strong> product performance,
+    <strong>forecast</strong> sales trends, and <strong>alert</strong> the owner proactively.</p>
+</section>
+
+<!-- ============== 3. OBJECTIVES ============== -->
+<section class="page">
+    <h2>3. Objectives</h2>
+    <p>The objectives of this project are to:</p>
+    <ul>
+        <li>Develop a complete Java web application for inventory and sales management.</li>
+        <li>Provide secure user authentication with <strong>Admin</strong> and <strong>Staff</strong> roles.</li>
+        <li>Manage products (add, update, delete, search) and stock levels.</li>
+        <li>Record sales transactions and generate bills/invoices, storing sales history.</li>
+        <li>Produce daily sales, monthly sales and product stock reports.</li>
+        <li>Implement at least <strong>four AI/ML features</strong> with clearly explainable logic.</li>
+        <li>Visualise business analytics using <strong>charts</strong>.</li>
+        <li>Integrate the Java system with an external <strong>AI/ML module (Python REST API)</strong>.</li>
+    </ul>
+</section>
+
+<!-- ============== 4. LITERATURE REVIEW ============== -->
+<section class="page">
+    <h2>4. Literature Review</h2>
+    <p>Large retailers rely heavily on data-driven inventory optimisation. Amazon and Walmart
+    use <strong>demand-forecasting</strong> models to reduce stockouts and overstock, and
+    <strong>inventory classification</strong> techniques to prioritise products.</p>
+    <p>Common, well-established techniques applied in this project include:</p>
+    <ul>
+        <li><strong>Linear Regression</strong> &ndash; a supervised machine-learning method that
+        fits a straight line to historical data to forecast future values. It is widely used for
+        demand and sales forecasting because it is simple, fast and explainable.</li>
+        <li><strong>K-Means Clustering</strong> &ndash; an unsupervised method that groups items
+        by similarity. It is used here to automatically separate fast-, slow- and dead-moving
+        products, similar in spirit to <strong>ABC analysis</strong> used in supply-chain management.</li>
+        <li><strong>Rule-based (expert) systems</strong> &ndash; logic built from clear business
+        rules (e.g. <em>"alert if stock &le; reorder level"</em>). These are transparent and
+        reliable, which is why they are used for the intelligent alerts.</li>
+    </ul>
+    <p>This project combines <strong>machine learning</strong> (scikit-learn) with
+    <strong>rule-based AI</strong> to give both predictive power and dependable, explainable behaviour.</p>
+</section>
+
+<!-- ============== 5. SYSTEM ANALYSIS ============== -->
+<section class="page">
+    <h2>5. System Analysis</h2>
+    <h3>5.1 Actors</h3>
+    <ul>
+        <li><strong>Admin</strong> &ndash; full access: manage products (including delete),
+        inventory, sales, reports and AI insights.</li>
+        <li><strong>Staff</strong> &ndash; restricted access: record sales, view stock and reports
+        (cannot delete products).</li>
+    </ul>
+    <h3>5.2 Functional Requirements</h3>
+    <ol>
+        <li>User authentication (login/logout) with roles.</li>
+        <li>Product management &ndash; add, update, delete, search.</li>
+        <li>Inventory management &ndash; add stock, adjust quantity, view stock, low-stock alerts.</li>
+        <li>Sales management &ndash; record sales, generate invoices, store history.</li>
+        <li>Reports &ndash; daily sales, monthly sales, product stock.</li>
+        <li>AI features &ndash; restock prediction, fast/slow/dead analysis, trend forecast, intelligent alerts.</li>
+    </ol>
+    <h3>5.3 Non-Functional Requirements</h3>
+    <ul>
+        <li><strong>Usability</strong> &ndash; clean dashboard, charts, responsive Bootstrap UI.</li>
+        <li><strong>Reliability</strong> &ndash; AI works even if the Python service is offline (rule-based fallback).</li>
+        <li><strong>Security</strong> &ndash; password hashing (BCrypt), role-based authorisation.</li>
+        <li><strong>Maintainability</strong> &ndash; layered architecture (controllers, services, repositories).</li>
+        <li><strong>Performance</strong> &ndash; indexed database queries and SQL-level aggregation.</li>
+    </ul>
+    <h3>5.4 Feasibility</h3>
+    <p>The system uses free, open-source, widely-supported technologies (Java, Spring Boot,
+    MySQL, Python) and runs on a normal PC, making it technically and economically feasible.</p>
+</section>
+
+<!-- ============== 6. SYSTEM DESIGN ============== -->
+<section class="page">
+    <h2>6. System Design</h2>
+    <h3>6.1 Architecture</h3>
+    <p>The system follows a <strong>layered architecture</strong> plus a separate
+    <strong>AI microservice</strong>:</p>
+<pre>Browser (Bootstrap 5 + Chart.js)
+   |
+Java Web App  -- Spring Boot 3 (MVC + Thymeleaf + Spring Security)
+   |
+   |-- MySQL 8            (Spring Data JPA / Hibernate)
+   |
+   +-- Flask REST API --  AI/ML Module (scikit-learn)
+                            |-- Prediction Engine (restock)
+                            |-- Trend Analysis
+                            +-- Recommendation Engine (movement)</pre>
+    <p>If the Python service is unavailable, the Java app falls back to a built-in
+    <strong>rule-based AI engine</strong>, so insights are always produced.</p>
+    <div class="shot">[ Insert architecture diagram here ]</div>
+    <h3>6.2 Technology Stack</h3>
+    <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Presentation</td><td>Thymeleaf, Bootstrap 5, Chart.js</td></tr>
+        <tr><td>Web / Backend</td><td>Java 17, Spring Boot 3.3, Spring MVC, Spring Security</td></tr>
+        <tr><td>Persistence</td><td>Spring Data JPA, Hibernate, MySQL 8</td></tr>
+        <tr><td>AI / ML</td><td>Python 3, Flask, scikit-learn, NumPy</td></tr>
+        <tr><td>Build</td><td>Maven</td></tr>
+    </table>
+    <h3>6.3 Module Design</h3>
+    <ul>
+        <li><strong>Controllers</strong> &ndash; one per page plus a JSON controller for charts.</li>
+        <li><strong>Services</strong> &ndash; Product, Inventory, Sales, Report, and AiService (orchestrates AI).</li>
+        <li><strong>AI layer</strong> &ndash; AiRuleEngine (Java), AiServiceClient (calls Flask), Python engines (ML).</li>
+        <li><strong>Repositories</strong> &ndash; Spring Data JPA interfaces for each entity.</li>
+    </ul>
+</section>
+
+<!-- ============== 7. DATABASE DESIGN ============== -->
+<section class="page">
+    <h2>7. Database Design</h2>
+    <p>The database <code>smart_inventory</code> contains six tables:</p>
+    <table>
+        <tr><th>Table</th><th>Purpose</th></tr>
+        <tr><td>users</td><td>Login accounts and roles (Admin/Staff)</td></tr>
+        <tr><td>categories</td><td>Product categories (Dairy, Bakery, &hellip;)</td></tr>
+        <tr><td>products</td><td>Product details, price, stock, reorder level, expiry</td></tr>
+        <tr><td>sales</td><td>Sales transactions (invoices)</td></tr>
+        <tr><td>sale_items</td><td>Line items within each sale</td></tr>
+        <tr><td>stock_movements</td><td>Audit log of every stock change (IN/OUT/ADJUST)</td></tr>
+    </table>
+    <h3>7.1 Relationships</h3>
+    <ul>
+        <li>One <strong>Category</strong> has many <strong>Products</strong> (1:N).</li>
+        <li>One <strong>Sale</strong> has many <strong>Sale Items</strong> (1:N).</li>
+        <li>One <strong>Product</strong> appears in many <strong>Sale Items</strong> (1:N).</li>
+        <li>One <strong>Product</strong> has many <strong>Stock Movements</strong> (1:N).</li>
+    </ul>
+    <div class="shot">[ Insert ER diagram here ]</div>
+    <h3>7.2 Data Volume</h3>
+    <p>To satisfy the minimum data requirement, the system auto-seeds <strong>64 products</strong>
+    and <strong>~1,400 sales records</strong> spanning 150 days of history, including realistic
+    patterns: weekend spikes, fast/slow/dead movers, low-stock and expiring items.</p>
+</section>
+
+<!-- ============== 8. AI MODEL EXPLANATION ============== -->
+<section class="page">
+    <h2>8. AI Model Explanation</h2>
+    <p>The system implements <strong>four AI features</strong>. Three use <strong>machine
+    learning</strong> (scikit-learn) with an equivalent <strong>rule-based</strong> fallback in
+    Java; the alerts are rule-based by design.</p>
+
+    <h3>8.1 Feature 1 &ndash; Smart Restock Prediction</h3>
+    <p><strong>Goal:</strong> predict when each product will run out and how much to reorder.</p>
+    <ol>
+        <li>Build each product's <strong>daily sales series</strong> over a 90-day window.</li>
+        <li>Estimate <strong>future daily demand <em>d</em></strong>: ML mode uses
+        <code>LinearRegression</code> blended with the recent 14-day average; rule mode uses
+        <em>d = total units sold &divide; days</em>.</li>
+        <li><strong>Days to stockout</strong> = current stock &divide; <em>d</em>.</li>
+        <li><strong>Recommended restock</strong> = (<em>d</em> &times; 30) &minus; current stock.</li>
+        <li><strong>Urgency:</strong> HIGH (&le;3 days / below reorder), MEDIUM (&le;7), LOW (&le;14), else OK.</li>
+    </ol>
+    <p><em>Example:</em> "Fresh Milk 1L may run out within 4 days. Recommended restock quantity: 60 units."</p>
+
+    <h3>8.2 Feature 2 &ndash; Fast / Slow / Dead Moving Analysis</h3>
+    <p><strong>Goal:</strong> classify products by sales performance.</p>
+    <ul>
+        <li><strong>DEAD</strong> if never sold or unsold in the last 30 days.</li>
+        <li>ML mode: remaining products grouped with <strong>K-Means clustering</strong> on
+        (units sold, recency); higher-selling cluster is <strong>FAST</strong>, the other <strong>SLOW</strong>.</li>
+        <li>Rule mode: busiest 25% are <strong>FAST</strong>, the rest <strong>SLOW</strong>.</li>
+        <li>Displayed as a <strong>doughnut chart</strong> plus fast-mover and dead-stock tables.</li>
+    </ul>
+
+    <h3>8.3 Feature 3 &ndash; Sales Trend Analysis &amp; Forecast</h3>
+    <ol>
+        <li>Build the <strong>daily revenue series</strong> (missing days filled with 0).</li>
+        <li><code>LinearRegression</code> finds the trend <strong>slope</strong> &rarr; growth rate %.</li>
+        <li>A <strong>weekday seasonal profile</strong> is computed (average revenue per weekday).</li>
+        <li>Each future day is forecast as <em>0.5 &times; trend + 0.5 &times; weekday average</em>.</li>
+    </ol>
+    <p><em>Example:</em> "Sales increase on weekends (about 45% higher than weekdays)."</p>
+
+    <h3>8.4 Feature 4 &ndash; Intelligent Alerts</h3>
+    <ul>
+        <li><strong>Low stock:</strong> quantity &le; reorder level.</li>
+        <li><strong>Overstock:</strong> stock cover greater than 60 days at current demand.</li>
+        <li><strong>Sudden sales drop:</strong> this week's revenue &ge; 30% lower than last week's.</li>
+        <li><strong>Expiry:</strong> perishable product expiring within 14 days (or already expired).</li>
+    </ul>
+</section>
+
+<!-- ============== 9. IMPLEMENTATION ============== -->
+<section class="page">
+    <h2>9. Implementation</h2>
+    <ul>
+        <li><strong>Backend:</strong> Java 17 + Spring Boot 3.3 (Spring MVC, Spring Security,
+        Spring Data JPA). Passwords are hashed with <strong>BCrypt</strong>; access is role-based.</li>
+        <li><strong>Frontend:</strong> Thymeleaf templates styled with Bootstrap 5; charts drawn
+        with <strong>Chart.js</strong> (Sales Trend, Product Performance, Revenue Analysis, AI Prediction).</li>
+        <li><strong>AI service:</strong> a Python <strong>Flask</strong> API exposing
+        <code>/predict/restock</code>, <code>/forecast/trend</code> and <code>/analyze/movement</code>,
+        implemented with <strong>scikit-learn</strong> (LinearRegression, KMeans).</li>
+        <li><strong>Integration:</strong> AiServiceClient (Spring RestTemplate) calls the Flask API
+        over REST; on any failure the Java AiRuleEngine is used instead.</li>
+        <li><strong>Data seeding:</strong> a DataSeeder populates users, the catalogue and the sales
+        history on first run.</li>
+    </ul>
+    <div class="shot">[ Insert screenshots: Dashboard, AI Insights, Prediction &amp; Analytics ]</div>
+</section>
+
+<!-- ============== 10. TESTING ============== -->
+<section class="page">
+    <h2>10. Testing</h2>
+    <table>
+        <tr><th>#</th><th>Test Case</th><th>Expected Result</th><th>Status</th></tr>
+        <tr><td>1</td><td>Login (valid)</td><td>Dashboard shown</td><td>Pass</td></tr>
+        <tr><td>2</td><td>Login (invalid)</td><td>"Invalid username or password"</td><td>Pass</td></tr>
+        <tr><td>3</td><td>Role check (staff)</td><td>Delete button hidden / blocked</td><td>Pass</td></tr>
+        <tr><td>4</td><td>Add product</td><td>Product appears in list</td><td>Pass</td></tr>
+        <tr><td>5</td><td>Search product</td><td>Matching products shown</td><td>Pass</td></tr>
+        <tr><td>6</td><td>Add stock</td><td>Stock increases, movement logged</td><td>Pass</td></tr>
+        <tr><td>7</td><td>Low-stock alert</td><td>Product flagged LOW + alert</td><td>Pass</td></tr>
+        <tr><td>8</td><td>Record sale</td><td>Invoice generated, stock reduced</td><td>Pass</td></tr>
+        <tr><td>9</td><td>Reports</td><td>Daily/monthly/stock + charts shown</td><td>Pass</td></tr>
+        <tr><td>10</td><td>Restock prediction</td><td>Days-to-stockout + restock qty shown</td><td>Pass</td></tr>
+        <tr><td>11</td><td>Trend forecast</td><td>Forecast line + insights shown</td><td>Pass</td></tr>
+        <tr><td>12</td><td>Movement analysis</td><td>Fast/Slow/Dead chart populated</td><td>Pass</td></tr>
+        <tr><td>13</td><td>AI fallback</td><td>App still shows AI (rule-based)</td><td>Pass</td></tr>
+    </table>
+    <div class="shot">[ Insert screenshots of test results ]</div>
+</section>
+
+<!-- ============== 11. RESULTS & DISCUSSION ============== -->
+<section class="page">
+    <h2>11. Results &amp; Discussion</h2>
+    <p>The completed system meets all functional requirements:</p>
+    <ul>
+        <li>It correctly <strong>records sales</strong>, <strong>updates stock</strong>, and
+        <strong>generates invoices</strong>.</li>
+        <li>The <strong>dashboard</strong> and <strong>reports</strong> display accurate
+        daily/monthly figures with four interactive charts.</li>
+        <li>The AI features produce sensible output on the seeded data: fast movers (Fresh Milk,
+        Cola, Bananas) are identified; dead stock (Glass Cleaner, Body Lotion) is flagged;
+        low-stock products generate restock predictions; and the trend analysis detects the
+        weekend sales spike built into the data.</li>
+    </ul>
+    <p>The <strong>dual ML + rule-based design</strong> proved valuable: insights remain available
+    whether or not the Python service is running, improving reliability. A limitation is that
+    Linear Regression assumes broadly linear demand; products with strong seasonality would benefit
+    from more advanced models.</p>
+</section>
+
+<!-- ============== 12. CONCLUSION ============== -->
+<section class="page">
+    <h2>12. Conclusion</h2>
+    <p>The Smart Inventory Management System successfully demonstrates a complete Java web
+    application enhanced with AI/ML-based business insights. It manages products, stock and sales,
+    and provides four intelligent features &mdash; restock prediction, fast/slow/dead analysis,
+    sales-trend forecasting and intelligent alerts &mdash; backed by both machine learning
+    (scikit-learn) and rule-based logic, with results visualised through charts.</p>
+    <p><strong>Future work</strong> could include more advanced forecasting models (ARIMA/Prophet),
+    a product recommendation/cross-selling engine, barcode scanning, and a chatbot assistant.</p>
+</section>
+
+<!-- ============== 13. REFERENCES ============== -->
+<section class="page">
+    <h2>13. References</h2>
+    <ol>
+        <li>Apache. <em>Spring Boot Reference Documentation.</em> https://docs.spring.io/spring-boot/</li>
+        <li>scikit-learn developers. <em>scikit-learn: Machine Learning in Python.</em> https://scikit-learn.org/</li>
+        <li>Pallets. <em>Flask Documentation.</em> https://flask.palletsprojects.com/</li>
+        <li>Oracle. <em>MySQL 8.0 Reference Manual.</em> https://dev.mysql.com/doc/</li>
+        <li>Chart.js. <em>Chart.js Documentation.</em> https://www.chartjs.org/docs/</li>
+        <li>[Add 1&ndash;2 textbook or journal references your course recommends, e.g. on inventory management / demand forecasting.]</li>
+    </ol>
+    <h3>Appendix &ndash; Demo Accounts</h3>
+    <table>
+        <tr><th>Role</th><th>Username</th><th>Password</th></tr>
+        <tr><td>Admin</td><td>admin</td><td>admin123</td></tr>
+        <tr><td>Staff</td><td>staff</td><td>staff123</td></tr>
+    </table>
+</section>
+
+</body>
+</html>
