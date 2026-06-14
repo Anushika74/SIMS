@@ -1,6 +1,9 @@
-Flask==3.0.3
-flask-cors==4.0.1
-scikit-learn==1.5.1
-numpy==1.26.4
-pandas==2.2.2
-joblib==1.4.2
+# Python AI/ML microservice dependencies.
+# Versions are intentionally left open ("flexible") so pip installs builds that
+# match your installed Python — including very new versions such as 3.13 / 3.14.
+# (pandas is not required by this service, so it is not listed.)
+Flask>=3.0
+flask-cors>=4.0
+numpy>=2.1
+scikit-learn>=1.5
+joblib>=1.4
