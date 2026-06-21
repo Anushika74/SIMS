@@ -9,6 +9,15 @@
         <nav th:replace="~{fragments/common :: topbar('Product Management')}"></nav>
         <div class="content">
 
+            <div th:if="${message}" class="alert alert-success alert-dismissible">
+                <span th:text="${message}">ok</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                <span th:text="${error}">error</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
             <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
                 <form class="d-flex" th:action="@{/products}" method="get" style="max-width:420px;">
                     <input class="form-control me-2" type="search" name="q" th:value="${q}"

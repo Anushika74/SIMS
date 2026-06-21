@@ -41,4 +41,7 @@ public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
     /** Last time a product was sold (NULL if never). JPQL keeps clean LocalDateTime mapping. */
     @Query("SELECT MAX(si.sale.saleDate) FROM SaleItem si WHERE si.product.id = :productId")
     LocalDateTime lastSoldDate(@Param("productId") Long productId);
+
+    /** Whether a product has any sales history (used to guard deletion). */
+    boolean existsByProductId(Long productId);
 }

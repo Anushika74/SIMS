@@ -8,4 +8,7 @@ import java.util.List;
 public interface StockMovementRepository extends JpaRepository<StockMovement, Long> {
     List<StockMovement> findTop20ByOrderByTimestampDesc();
     List<StockMovement> findByProductIdOrderByTimestampDesc(Long productId);
+
+    /** Remove a product's audit-trail movements (safe to delete with the product). */
+    void deleteByProductId(Long productId);
 }

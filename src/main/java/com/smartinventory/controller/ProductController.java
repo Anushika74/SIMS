@@ -5,6 +5,7 @@ import com.smartinventory.service.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/products")
@@ -53,8 +54,14 @@ public class ProductController {
     }
 
     @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id) {
-        productService.delete(id);
+    public String delete(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            productService.delete(id);
+            ra.addFlashAttribute("message", "Product deleted successfully.");
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", ex.getMessage() != null ? ex.getMessage()
+                    : "This product cannot be deleted because it is used in sales records.");
+        }
         return "redirect:/products";
     }
 }
