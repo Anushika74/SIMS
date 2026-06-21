@@ -11,7 +11,19 @@ const SI = {
     },
 
     money(v) {
+        const sym = window.SIMS_CURRENCY || '';
+        const num = Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        return sym ? sym + ' ' + num : num;
+    },
+
+    // number only (no currency) — for chart axes
+    num(v) {
         return Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    },
+
+    // adds the currency symbol to a chart tooltip value
+    tooltipMoney(ctx) {
+        return (window.SIMS_CURRENCY ? window.SIMS_CURRENCY + ' ' : '') + SI.num(ctx.parsed.y);
     },
 
     // Line chart with an optional dashed forecast tail.
@@ -49,11 +61,14 @@ const SI = {
                 ]
             },
             options: { responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } } }
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: (c) => c.dataset.label + ': ' + SI.money(c.parsed.y) } }
+                } }
         });
     },
 
-    barChart(canvasId, data, label, color) {
+    barChart(canvasId, data, label, color, moneyTooltip) {
         return new Chart(document.getElementById(canvasId), {
             type: 'bar',
             data: {
@@ -66,7 +81,10 @@ const SI = {
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (c) => moneyTooltip ? SI.money(c.parsed.y) : SI.num(c.parsed.y) } }
+                },
                 scales: { y: { beginAtZero: true } } }
         });
     },
@@ -81,5 +99,22 @@ const SI = {
             options: { responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom' } } }
         });
+    },
+
+    // Export an HTML table to a downloadable CSV file.
+    exportTableCsv(tableId, filename) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const rows = [...table.querySelectorAll('tr')];
+        const csv = rows.map(r => [...r.querySelectorAll('th,td')]
+            .map(c => '"' + c.innerText.replace(/"/g, '""').trim() + '"').join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename || 'report.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
     }
 };

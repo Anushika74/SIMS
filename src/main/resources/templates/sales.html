@@ -61,7 +61,7 @@
                                     <tr th:if="${#lists.isEmpty(recentSales)}"><td colspan="2" class="text-muted small">No sales yet.</td></tr>
                                     <tr th:each="s : ${recentSales}">
                                         <td><a th:href="@{'/sales/invoice/' + ${s.id}}" th:text="${s.invoiceNo}">INV</a></td>
-                                        <td class="text-end" th:text="${#numbers.formatDecimal(s.totalAmount,0,'COMMA',2,'POINT')}">0</td>
+                                        <td class="text-end" th:text="${currency + ' ' + #numbers.formatDecimal(s.totalAmount,0,'COMMA',2,'POINT')}">0</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -79,7 +79,7 @@
     <option value="">— Select product —</option>
     <option th:each="p : ${products}" th:value="${p.id}"
             th:attr="data-price=${p.unitPrice}, data-stock=${p.quantity}"
-            th:text="${p.name} + ' (' + ${#numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT')} + ')'">Product</option>
+            th:text="${p.name + ' (' + currency + ' ' + #numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT') + ')'}">Product</option>
 </select>
 
 <th:block th:replace="~{fragments/common :: scripts}"></th:block>

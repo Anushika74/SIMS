@@ -45,7 +45,7 @@
                                 <td><code th:text="${p.sku}">SKU</code></td>
                                 <td th:text="${p.name}">Name</td>
                                 <td th:text="${p.category != null ? p.category.name : '—'}">Cat</td>
-                                <td class="text-end" th:text="${#numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT')}">0</td>
+                                <td class="text-end" th:text="${currency + ' ' + #numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT')}">0</td>
                                 <td class="text-center">
                                     <span class="badge" th:classappend="${p.lowStock} ? 'bg-danger' : 'bg-success'"
                                           th:text="${p.quantity}">0</span>

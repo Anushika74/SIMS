@@ -33,9 +33,9 @@
                     <div style="height:330px;"><canvas id="trendChart"></canvas></div>
                     <div class="row text-center mt-3">
                         <div class="col"><div class="text-muted small">Weekday Avg</div>
-                            <div class="fw-bold" th:text="${#numbers.formatDecimal(trend.weekdayAverage,0,'COMMA',2,'POINT')}">0</div></div>
+                            <div class="fw-bold" th:text="${currency + ' ' + #numbers.formatDecimal(trend.weekdayAverage,0,'COMMA',2,'POINT')}">0</div></div>
                         <div class="col"><div class="text-muted small">Weekend Avg</div>
-                            <div class="fw-bold" th:text="${#numbers.formatDecimal(trend.weekendAverage,0,'COMMA',2,'POINT')}">0</div></div>
+                            <div class="fw-bold" th:text="${currency + ' ' + #numbers.formatDecimal(trend.weekendAverage,0,'COMMA',2,'POINT')}">0</div></div>
                         <div class="col"><div class="text-muted small">Daily Growth</div>
                             <div class="fw-bold" th:classappend="${trend.growthRatePct >= 0} ? 'text-success' : 'text-danger'"
                                  th:text="${#numbers.formatDecimal(trend.growthRatePct,0,'POINT',1,'POINT')} + '%'">0%</div></div>
