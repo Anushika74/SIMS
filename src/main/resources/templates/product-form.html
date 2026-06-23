@@ -69,9 +69,48 @@
                     </form>
                 </div>
             </div>
+
+            <div class="card mt-3">
+                <div class="card-header"><i class="bi bi-upc-scan"></i> Product Barcode</div>
+                <div class="card-body text-center">
+                    <svg id="barcode"></svg>
+                    <div class="mt-2 no-print">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="printBarcode()">
+                            <i class="bi bi-printer"></i> Print Barcode
+                        </button>
+                    </div>
+                    <div class="form-text">This barcode encodes the product's SKU. Print it, stick it on the
+                        product, and scan it on the Sales page to add the item.</div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
 <th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+    function renderBarcode() {
+        const skuEl = document.getElementById('sku');
+        const svg = document.getElementById('barcode');
+        const code = skuEl ? skuEl.value.trim() : '';
+        if (!code) { svg.innerHTML = ''; return; }
+        try { JsBarcode('#barcode', code, { format: 'CODE128', displayValue: true, height: 60, fontSize: 14 }); }
+        catch (e) { svg.innerHTML = ''; }
+    }
+    function printBarcode() {
+        const code = (document.getElementById('sku') || {}).value || '';
+        if (!code) { alert('Enter a SKU first.'); return; }
+        const svg = document.getElementById('barcode').outerHTML;
+        const w = window.open('', '_blank');
+        w.document.write('<html><head><title>Barcode ' + code + '</title></head>' +
+            '<body style="text-align:center;margin-top:60px">' + svg + '</body></html>');
+        w.document.close(); w.focus(); w.print();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        renderBarcode();
+        const skuEl = document.getElementById('sku');
+        if (skuEl) skuEl.addEventListener('input', renderBarcode);
+    });
+</script>
 </body>
 </html>

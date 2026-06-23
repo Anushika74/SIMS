@@ -18,6 +18,15 @@
                             <a th:href="@{/sales/history}" class="small">Sales history →</a>
                         </div>
                         <div class="card-body">
+                            <div class="input-group input-group-sm mb-3" style="max-width:460px;">
+                                <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                                <input id="barcodeBox" class="form-control" autocomplete="off"
+                                       placeholder="Scan or type a barcode (SKU) then press Enter">
+                                <button type="button" class="btn btn-outline-success" onclick="openScanner()">
+                                    <i class="bi bi-camera-video"></i> Camera
+                                </button>
+                            </div>
+
                             <form th:action="@{/sales/record}" method="post" id="saleForm">
                                 <table class="table align-middle" id="itemsTable">
                                     <thead class="table-light">
@@ -82,7 +91,26 @@
             th:text="${p.name + ' (' + currency + ' ' + #numbers.formatDecimal(p.unitPrice,0,'COMMA',2,'POINT') + ')'}">Product</option>
 </select>
 
+<!-- Barcode scanner modal -->
+<div class="modal fade" id="scanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-upc-scan"></i> Scan Barcode</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reader" style="width:100%"></div>
+                <div id="scanMsg" class="small text-muted mt-2">
+                    Point your camera at a product barcode or QR code.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
     const optionsHtml = document.getElementById('productOptions').innerHTML;
 
@@ -115,6 +143,83 @@
     document.getElementById('saleForm').addEventListener('submit', e => {
         const rows = document.querySelectorAll('#itemsBody tr').length;
         if (rows === 0) { e.preventDefault(); alert('Add at least one item.'); }
+    });
+
+    // ---------- Barcode scanning ----------
+    let html5Qr = null, lastCode = '', lastTime = 0;
+
+    function scanMsg(text) {
+        const el = document.getElementById('scanMsg');
+        if (el) el.textContent = text;
+    }
+
+    // Look the barcode (SKU) up on the server and add the product to the sale.
+    function lookupAndAdd(code) {
+        code = (code || '').trim();
+        if (!code) return;
+        fetch('/products/by-barcode?code=' + encodeURIComponent(code))
+            .then(r => r.json())
+            .then(d => {
+                if (!d.found) { scanMsg('No product found for barcode: ' + code); return; }
+                addProductById(String(d.id));
+                scanMsg('Added: ' + d.name);
+            })
+            .catch(() => scanMsg('Lookup failed. Try again.'));
+    }
+
+    // Add a product row (or increase quantity if it is already in the cart).
+    function addProductById(id) {
+        let found = false;
+        document.querySelectorAll('#itemsBody tr').forEach(tr => {
+            const sel = tr.querySelector('.prod');
+            if (sel && sel.value === id) {
+                const q = tr.querySelector('.qty');
+                q.value = parseInt(q.value || '1', 10) + 1;
+                found = true;
+            }
+        });
+        if (!found) {
+            addRow();
+            const tr = document.getElementById('itemsBody').lastElementChild;
+            tr.querySelector('.prod').value = id;
+        }
+        recalc();
+    }
+
+    function onScanSuccess(text) {
+        const now = Date.now();
+        if (text === lastCode && now - lastTime < 2500) return; // debounce duplicate reads
+        lastCode = text; lastTime = now;
+        lookupAndAdd(text);
+    }
+
+    function openScanner() {
+        const modalEl = document.getElementById('scanModal');
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        if (!html5Qr) html5Qr = new Html5Qrcode('reader');
+        Html5Qrcode.getCameras().then(cams => {
+            if (cams && cams.length) {
+                const camId = cams[cams.length - 1].id; // usually the back camera
+                html5Qr.start(camId, { fps: 10, qrbox: 250 }, onScanSuccess, () => {})
+                    .catch(() => scanMsg('Could not start the camera. Use the barcode box instead.'));
+            } else {
+                scanMsg('No camera found. Use the barcode box instead.');
+            }
+        }).catch(() => scanMsg('Camera unavailable. Use the barcode box instead.'));
+        modalEl.addEventListener('hidden.bs.modal', stopScanner, { once: true });
+    }
+
+    function stopScanner() {
+        if (html5Qr && html5Qr.isScanning) html5Qr.stop().catch(() => {});
+    }
+
+    // Manual barcode entry: type/scan into the box and press Enter.
+    document.getElementById('barcodeBox').addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            lookupAndAdd(e.target.value);
+            e.target.value = '';
+        }
     });
 </script>
 </body>

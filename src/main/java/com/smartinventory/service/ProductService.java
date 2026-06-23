@@ -45,6 +45,12 @@ public class ProductService {
         return productRepository.findById(id);
     }
 
+    /** Find a product by its SKU/barcode (case-insensitive). */
+    public Optional<Product> findBySku(String sku) {
+        if (sku == null || sku.isBlank()) return Optional.empty();
+        return productRepository.findBySkuIgnoreCase(sku.trim());
+    }
+
     @Transactional
     public Product save(Product product) {
         return productRepository.save(product);

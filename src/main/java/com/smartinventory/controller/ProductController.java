@@ -7,6 +7,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/products")
 public class ProductController {
@@ -63,5 +66,21 @@ public class ProductController {
                     : "This product cannot be deleted because it is used in sales records.");
         }
         return "redirect:/products";
+    }
+
+    /** Barcode/SKU lookup used by the scanner on the Sales page (returns JSON). */
+    @GetMapping("/by-barcode")
+    @ResponseBody
+    public Map<String, Object> byBarcode(@RequestParam("code") String code) {
+        Map<String, Object> result = new HashMap<>();
+        productService.findBySku(code).ifPresentOrElse(p -> {
+            result.put("found", true);
+            result.put("id", p.getId());
+            result.put("name", p.getName());
+            result.put("sku", p.getSku());
+            result.put("unitPrice", p.getUnitPrice());
+            result.put("quantity", p.getQuantity());
+        }, () -> result.put("found", false));
+        return result;
     }
 }

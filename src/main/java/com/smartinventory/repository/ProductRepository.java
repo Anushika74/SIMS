@@ -7,8 +7,12 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
+    /** Exact lookup by SKU / barcode (case-insensitive) — used by the scanner. */
+    Optional<Product> findBySkuIgnoreCase(String sku);
 
     /** Case-insensitive search by name, SKU or category name. */
     @Query("SELECT p FROM Product p WHERE " +
