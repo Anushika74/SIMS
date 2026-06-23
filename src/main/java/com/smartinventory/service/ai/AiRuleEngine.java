@@ -330,6 +330,52 @@ public class AiRuleEngine {
     }
 
     // ------------------------------------------------------------------
+    // AI Predicted Wastage — perishables likely to expire before they sell
+    // ------------------------------------------------------------------
+    public List<WastagePrediction> predictedWastage() {
+        LocalDateTime from = LocalDate.now().minusDays(windowDays).atStartOfDay();
+        Map<Long, Long> sold = new HashMap<>();
+        for (ProductSalesProjection r : saleItemRepository.aggregateProductSalesSince(from)) {
+            sold.put(r.getProductId(), r.getTotalQuantity() == null ? 0L : r.getTotalQuantity());
+        }
+
+        List<WastagePrediction> out = new ArrayList<>();
+        for (Product p : productRepository.findAll()) {
+            if (p.getExpiryDate() == null || p.getQuantity() <= 0) continue;
+
+            long daysToExpiry = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), p.getExpiryDate());
+            double avgDaily = sold.getOrDefault(p.getId(), 0L) / (double) windowDays;
+
+            WastagePrediction w = new WastagePrediction();
+            w.setProductId(p.getId());
+            w.setProductName(p.getName());
+            w.setCurrentStock(p.getQuantity());
+            w.setDaysToExpiry((int) daysToExpiry);
+
+            if (daysToExpiry < 0) {
+                w.setProjectedSales(0);
+                w.setPredictedWasteUnits(p.getQuantity());
+                w.setEstimatedLoss(p.getCostPrice().multiply(BigDecimal.valueOf(p.getQuantity())));
+                w.setMessage(p.getName() + " expired " + Math.abs(daysToExpiry)
+                        + " days ago — write off " + p.getQuantity() + " units.");
+                out.add(w);
+            } else {
+                long projected = Math.round(avgDaily * daysToExpiry);
+                long waste = Math.max(0, p.getQuantity() - projected);
+                if (waste <= 0) continue; // it will likely all sell — no predicted waste
+                w.setProjectedSales(projected);
+                w.setPredictedWasteUnits(waste);
+                w.setEstimatedLoss(p.getCostPrice().multiply(BigDecimal.valueOf(waste)));
+                w.setMessage("~" + waste + " units of " + p.getName() + " may expire before selling (in "
+                        + daysToExpiry + " days). Consider a discount or promotion.");
+                out.add(w);
+            }
+        }
+        out.sort(Comparator.comparing(WastagePrediction::getEstimatedLoss).reversed());
+        return out;
+    }
+
+    // ------------------------------------------------------------------
     // Helpers
     // ------------------------------------------------------------------
 

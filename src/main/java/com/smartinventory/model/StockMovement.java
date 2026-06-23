@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class StockMovement {
 
-    public enum Type { IN, OUT, ADJUST }
+    public enum Type { IN, OUT, ADJUST, WASTE }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

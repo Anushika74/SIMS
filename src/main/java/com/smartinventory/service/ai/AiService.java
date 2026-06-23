@@ -116,6 +116,11 @@ public class AiService {
         return alerts().size();
     }
 
+    /** AI predicted wastage — perishables likely to expire before they sell. */
+    public List<WastagePrediction> predictedWastage() {
+        return ruleEngine.predictedWastage();
+    }
+
     // -------------------------------------------------------------------------
 
     /** Builds the per-product daily sales series payload for the ML service. */

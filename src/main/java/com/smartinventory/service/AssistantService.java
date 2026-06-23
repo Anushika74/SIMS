@@ -28,6 +28,7 @@ public class AssistantService {
     private final ReportService reportService;
     private final ProductService productService;
     private final ProductRepository productRepository;
+    private final WastageService wastageService;
 
     @Value("${app.currency.symbol:Rs.}")
     private String currency;
@@ -35,11 +36,13 @@ public class AssistantService {
     private int expiryWarningDays;
 
     public AssistantService(AiService aiService, ReportService reportService,
-                            ProductService productService, ProductRepository productRepository) {
+                            ProductService productService, ProductRepository productRepository,
+                            WastageService wastageService) {
         this.aiService = aiService;
         this.reportService = reportService;
         this.productService = productService;
         this.productRepository = productRepository;
+        this.wastageService = wastageService;
     }
 
     public Map<String, Object> ask(String question) {
@@ -70,6 +73,8 @@ public class AssistantService {
             return trend();
         if (contains(q, "how many product", "total product", "number of product", "product count", "how many item"))
             return productCount();
+        if (contains(q, "wastage", "waste", "spoil", "write off", "loss"))
+            return wastage();
         if (contains(q, "alert", "warning"))
             return alerts();
         if (contains(q, "revenue", "sales", "income", "earn", "profit", "money"))
@@ -89,6 +94,7 @@ public class AssistantService {
                 + "<li>What is <b>today's revenue</b> / <b>this month's</b> sales?</li>"
                 + "<li>What's the <b>sales trend</b>?</li>"
                 + "<li>Show me the <b>alerts</b></li>"
+                + "<li>How much <b>wastage</b> this month?</li>"
                 + "</ul>";
     }
 
@@ -188,6 +194,20 @@ public class AssistantService {
         alerts.stream().limit(10).forEach(a -> sb.append("<li><b>").append(a.getTitle()).append(":</b> ")
                 .append(a.getMessage()).append("</li>"));
         return sb.append("</ul>").toString();
+    }
+
+    private String wastage() {
+        java.math.BigDecimal month = wastageService.monthLoss();
+        List<WastagePrediction> pred = aiService.predictedWastage();
+        StringBuilder sb = new StringBuilder("🗑️ <b>Wastage</b>: " + money(month) + " lost this month.");
+        if (pred.isEmpty()) {
+            sb.append(" No upcoming expiry wastage predicted. 👍");
+        } else {
+            sb.append("<br>Predicted upcoming wastage:<ul class='mb-0'>");
+            pred.stream().limit(5).forEach(w -> sb.append("<li>").append(w.getMessage()).append("</li>"));
+            sb.append("</ul>");
+        }
+        return sb.toString();
     }
 
     private String fallback() {

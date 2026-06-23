@@ -14,6 +14,7 @@ public class DashboardStats {
     private long todaysTransactions;
     private BigDecimal todaysRevenue = BigDecimal.ZERO;
     private BigDecimal monthRevenue = BigDecimal.ZERO;
+    private BigDecimal monthWastage = BigDecimal.ZERO;
     private long totalSales;
     private int activeAlerts;
 }

@@ -19,10 +19,13 @@ public class ReportService {
 
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
+    private final com.smartinventory.repository.WastageRepository wastageRepository;
 
-    public ReportService(SaleRepository saleRepository, ProductRepository productRepository) {
+    public ReportService(SaleRepository saleRepository, ProductRepository productRepository,
+                         com.smartinventory.repository.WastageRepository wastageRepository) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
+        this.wastageRepository = wastageRepository;
     }
 
     public List<DailySalesProjection> dailySales(int days) {
@@ -51,6 +54,7 @@ public class ReportService {
         stats.setTodaysTransactions(saleRepository.countBySaleDateBetween(startOfToday, endOfToday));
         stats.setTodaysRevenue(saleRepository.sumRevenueBetween(startOfToday, endOfToday));
         stats.setMonthRevenue(saleRepository.sumRevenueBetween(startOfMonth, now));
+        stats.setMonthWastage(wastageRepository.sumLossBetween(startOfMonth, now));
         stats.setTotalSales(saleRepository.count());
 
         return stats;

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/common :: head('Wastage')}"></head>
+<body>
+<div class="layout">
+    <aside th:replace="~{fragments/common :: sidebar('wastage')}"></aside>
+    <main class="main">
+        <nav th:replace="~{fragments/common :: topbar('Wastage Management')}"></nav>
+        <div class="content">
+
+            <div th:if="${message}" class="alert alert-success alert-dismissible">
+                <span th:text="${message}">ok</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible">
+                <span th:text="${error}">error</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Summary cards -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-danger bg-opacity-10 text-danger"><i class="bi bi-cash-stack"></i></div>
+                            <div>
+                                <div class="text-muted small">Total Loss (all time)</div>
+                                <div class="stat-value" th:text="${currency + ' ' + #numbers.formatDecimal(totalLoss,0,'COMMA',2,'POINT')}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-calendar-month"></i></div>
+                            <div>
+                                <div class="text-muted small">Loss This Month</div>
+                                <div class="stat-value" th:text="${currency + ' ' + #numbers.formatDecimal(monthLoss,0,'COMMA',2,'POINT')}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-trash3"></i></div>
+                            <div>
+                                <div class="text-muted small">Wastage Records</div>
+                                <div class="stat-value" th:text="${wastageCount}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <!-- Record wastage -->
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-header"><i class="bi bi-trash3"></i> Record Wastage</div>
+                        <div class="card-body">
+                            <form th:action="@{/wastage/record}" method="post" class="row g-2">
+                                <div class="col-12">
+                                    <label class="form-label small">Product</label>
+                                    <select name="productId" class="form-select" required>
+                                        <option th:each="p : ${products}" th:value="${p.id}"
+                                                th:text="${p.name} + ' (in stock: ' + ${p.quantity} + ')'">Product</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Quantity wasted</label>
+                                    <input type="number" min="1" name="quantity" class="form-control" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">Reason</label>
+                                    <select name="reason" class="form-select" required>
+                                        <option th:each="r : ${reasons}" th:value="${r}" th:text="${r}">REASON</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small">Note (optional)</label>
+                                    <input name="note" class="form-control" placeholder="e.g. batch B-12 leaked">
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-danger w-100"><i class="bi bi-trash"></i> Record Wastage</button>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-text">This reduces stock and records the loss
+                                        (quantity &times; cost price). For genuine count corrections use
+                                        <a th:href="@{/inventory}">Inventory &rarr; Adjust</a> instead.</div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="col-lg-7">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="bi bi-pie-chart"></i> Loss by Reason</div>
+                                <div class="card-body" style="height:240px;"><canvas id="reasonChart"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header"><i class="bi bi-bar-chart"></i> Wastage Trend</div>
+                                <div class="card-body" style="height:240px;"><canvas id="trendChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI predicted wastage -->
+            <div class="card mt-3">
+                <div class="card-header"><i class="bi bi-robot text-primary"></i> AI Predicted Wastage
+                    <span class="badge bg-secondary" th:text="${#lists.size(predicted)}">0</span></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Product</th><th class="text-center">Stock</th><th class="text-center">Days to Expiry</th>
+                                <th class="text-center">Likely Waste</th><th class="text-end">Est. Loss</th><th>Suggestion</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${#lists.isEmpty(predicted)}"><td colspan="6" class="text-muted small p-3">No predicted wastage — perishables should sell in time. 👍</td></tr>
+                            <tr th:each="w : ${predicted}">
+                                <td th:text="${w.productName}">Name</td>
+                                <td class="text-center" th:text="${w.currentStock}">0</td>
+                                <td class="text-center">
+                                    <span class="badge" th:classappend="${w.daysToExpiry < 0} ? 'bg-danger' : 'bg-warning text-dark'"
+                                          th:text="${w.daysToExpiry}">0</span>
+                                </td>
+                                <td class="text-center fw-bold" th:text="${w.predictedWasteUnits}">0</td>
+                                <td class="text-end" th:text="${currency + ' ' + #numbers.formatDecimal(w.estimatedLoss,0,'COMMA',2,'POINT')}">0</td>
+                                <td class="small" th:text="${w.message}">msg</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <!-- Recent wastage -->
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-clock-history"></i> Recent Wastage</div>
+                        <div class="card-body p-0" style="max-height:360px; overflow:auto;">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light sticky-top"><tr><th>Product</th><th>Reason</th><th class="text-center">Qty</th><th class="text-end">Loss</th><th>When</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(recent)}"><td colspan="5" class="text-muted small p-3">No wastage recorded yet.</td></tr>
+                                    <tr th:each="w : ${recent}">
+                                        <td th:text="${w.product.name}">Name</td>
+                                        <td><span class="badge bg-dark" th:text="${w.reason}">REASON</span></td>
+                                        <td class="text-center" th:text="${w.quantity}">0</td>
+                                        <td class="text-end" th:text="${currency + ' ' + #numbers.formatDecimal(w.lossAmount,0,'COMMA',2,'POINT')}">0</td>
+                                        <td class="small" th:text="${#temporals.format(w.timestamp,'dd MMM HH:mm')}">date</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- By reason summary -->
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-header"><i class="bi bi-list-ul"></i> Loss by Reason</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light"><tr><th>Reason</th><th class="text-center">Units</th><th class="text-end">Loss</th></tr></thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(byReason)}"><td colspan="3" class="text-muted small p-3">No data.</td></tr>
+                                    <tr th:each="r : ${byReason}">
+                                        <td th:text="${r.label}">reason</td>
+                                        <td class="text-center" th:text="${r.qty}">0</td>
+                                        <td class="text-end" th:text="${currency + ' ' + #numbers.formatDecimal(r.total,0,'COMMA',2,'POINT')}">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/common :: scripts}"></th:block>
+<script>
+    SI.fetchJson('/api/charts/wastage-by-reason')
+        .then(d => SI.doughnut('reasonChart', d, ['#dc2626', '#f59e0b', '#8b5cf6', '#0ea5e9', '#64748b']))
+        .catch(console.error);
+    SI.fetchJson('/api/charts/wastage-trend')
+        .then(d => SI.barChart('trendChart', d, 'Loss', '#dc2626', true))
+        .catch(console.error);
+</script>
+</body>
+</html>

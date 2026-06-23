@@ -85,3 +85,17 @@ CREATE TABLE IF NOT EXISTS stock_movements (
     CONSTRAINT fk_movement_product FOREIGN KEY (product_id) REFERENCES products (id),
     INDEX idx_movement_product (product_id)
 );
+
+-- ---------- Wastage (stock lost not sold) ----------
+CREATE TABLE IF NOT EXISTS wastage (
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_id   BIGINT NOT NULL,
+    quantity     INT    NOT NULL,
+    reason       VARCHAR(20) NOT NULL,          -- EXPIRED | DAMAGED | SPOILED | THEFT | OTHER
+    note         VARCHAR(255),
+    loss_amount  DECIMAL(12,2) NOT NULL DEFAULT 0,
+    performed_by VARCHAR(50),
+    timestamp    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_wastage_product FOREIGN KEY (product_id) REFERENCES products (id),
+    INDEX idx_wastage_product (product_id)
+);

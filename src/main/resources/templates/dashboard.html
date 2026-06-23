@@ -55,6 +55,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card stat-card p-3 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-trash3"></i></div>
+                            <div>
+                                <div class="text-muted small">Wastage (This Month)</div>
+                                <div class="stat-value" th:text="${currency + ' ' + #numbers.formatDecimal(stats.monthWastage,0,'COMMA',2,'POINT')}">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="row g-3">
