@@ -118,3 +118,9 @@ const SI = {
         URL.revokeObjectURL(a.href);
     }
 };
+
+// Dark-theme friendly chart text/grid colours
+if (window.Chart) {
+    Chart.defaults.color = '#cbd5e1';
+    Chart.defaults.borderColor = 'rgba(148,163,184,0.18)';
+}

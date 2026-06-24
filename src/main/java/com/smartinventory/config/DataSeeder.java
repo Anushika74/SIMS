@@ -37,7 +37,6 @@ public class DataSeeder implements ApplicationRunner {
     private final ProductRepository productRepository;
     private final SaleRepository saleRepository;
     private final StockMovementRepository movementRepository;
-    private final WastageRepository wastageRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${app.seed.enabled:true}")
@@ -53,14 +52,12 @@ public class DataSeeder implements ApplicationRunner {
 
     public DataSeeder(UserRepository userRepository, CategoryRepository categoryRepository,
                       ProductRepository productRepository, SaleRepository saleRepository,
-                      StockMovementRepository movementRepository, WastageRepository wastageRepository,
-                      PasswordEncoder passwordEncoder) {
+                      StockMovementRepository movementRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.saleRepository = saleRepository;
         this.movementRepository = movementRepository;
-        this.wastageRepository = wastageRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -82,29 +79,6 @@ public class DataSeeder implements ApplicationRunner {
         } else {
             log.info("Products already present — skipping catalogue/sales seeding.");
         }
-        seedWastageIfEmpty();
-    }
-
-    /** Seeds a handful of demo wastage records (runs once, even on existing databases). */
-    private void seedWastageIfEmpty() {
-        if (wastageRepository.count() > 0) return;
-        List<Product> all = productRepository.findAll();
-        if (all.isEmpty()) return;
-
-        Wastage.Reason[] reasons = Wastage.Reason.values();
-        List<Wastage> batch = new ArrayList<>();
-        for (int i = 0; i < 45; i++) {
-            Product p = all.get(rnd.nextInt(all.size()));
-            int qty = 1 + rnd.nextInt(8);
-            Wastage.Reason reason = (p.getExpiryDate() != null && rnd.nextBoolean())
-                    ? Wastage.Reason.EXPIRED : reasons[rnd.nextInt(reasons.length)];
-            BigDecimal loss = p.getCostPrice().multiply(BigDecimal.valueOf(qty));
-            Wastage w = new Wastage(p, qty, reason, "Seeded demo wastage", loss, "admin");
-            w.setTimestamp(LocalDate.now().minusDays(rnd.nextInt(120)).atTime(8 + rnd.nextInt(10), rnd.nextInt(60)));
-            batch.add(w);
-        }
-        wastageRepository.saveAll(batch);
-        log.info("Seeded {} demo wastage records.", batch.size());
     }
 
     // ------------------------------------------------------------------

@@ -21,13 +21,10 @@ public class ChartDataController {
 
     private final ReportService reportService;
     private final AiService aiService;
-    private final com.smartinventory.service.WastageService wastageService;
 
-    public ChartDataController(ReportService reportService, AiService aiService,
-                               com.smartinventory.service.WastageService wastageService) {
+    public ChartDataController(ReportService reportService, AiService aiService) {
         this.reportService = reportService;
         this.aiService = aiService;
-        this.wastageService = wastageService;
     }
 
     /** Chart 1 — Sales Trend (history + AI forecast). */
@@ -103,36 +100,6 @@ public class ChartDataController {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("labels", new ArrayList<>(summary.keySet()));
         m.put("values", new ArrayList<>(summary.values()));
-        return m;
-    }
-
-    /** Wastage loss grouped by reason (doughnut). */
-    @GetMapping("/wastage-by-reason")
-    public Map<String, Object> wastageByReason() {
-        List<String> labels = new ArrayList<>();
-        List<Double> values = new ArrayList<>();
-        wastageService.byReason().forEach(r -> {
-            labels.add(r.getLabel());
-            values.add(r.getTotal() == null ? 0.0 : r.getTotal().doubleValue());
-        });
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("labels", labels);
-        m.put("values", values);
-        return m;
-    }
-
-    /** Wastage loss trend by month (bar). */
-    @GetMapping("/wastage-trend")
-    public Map<String, Object> wastageTrend() {
-        List<String> labels = new ArrayList<>();
-        List<Double> values = new ArrayList<>();
-        wastageService.byMonth().forEach(r -> {
-            labels.add(r.getLabel());
-            values.add(r.getTotal() == null ? 0.0 : r.getTotal().doubleValue());
-        });
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("labels", labels);
-        m.put("values", values);
         return m;
     }
 }
